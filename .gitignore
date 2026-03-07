@@ -95,3 +95,5 @@ reports/
 
 # Logs
 *.log
+
+local_s3/
