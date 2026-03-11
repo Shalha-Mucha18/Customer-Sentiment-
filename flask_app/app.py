@@ -17,6 +17,10 @@ import warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore")
 
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
+MODEL_DIR = ROOT_DIR / "models"
+
 
 def lematization(text):
     """Lemmatize the text."""
@@ -69,10 +73,15 @@ def normalize_text(text):
     text = lematization(text)
     return text
              
-# Below code block is for local use
-# -------------------------------------------------------------------------------------
-mlflow.set_tracking_uri('https://dagshub.com/Shalha-Mucha18/Capstone-Project-2026.mlflow')
-dagshub.init(repo_owner='Shalha-Mucha18', repo_name='Capstone-Project-2026', mlflow=True)
+# MLflow tracking configuration
+dagshub_token = os.getenv("CAPSTONE_TEST")
+if dagshub_token:
+    os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+    mlflow.set_tracking_uri('https://dagshub.com/Shalha-Mucha18/Capstone-Project-2026.mlflow')
+    dagshub.init(repo_owner='Shalha-Mucha18', repo_name='Capstone-Project-2026', mlflow=True)
+else:
+    mlflow.set_tracking_uri(f"file://{ROOT_DIR / 'mlruns'}")
 
 
 
@@ -94,18 +103,21 @@ PREDICTION_COUNT = Counter(
 )
 
 
-BASE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = BASE_DIR.parent
-MODEL_DIR = ROOT_DIR / "models"
-
 model_name = "my_model"
 def get_latest_model_version(model_name):
     client = mlflow.MlflowClient()
-    latest_version = client.get_latest_versions(model_name, stages=["Production"])
-    if latest_version:
-        return latest_version[0].version
+    try:
+        latest_version = client.get_latest_versions(model_name, stages=["Production"])
+        if latest_version:
+            return latest_version[0].version
+    except Exception:
+        # Registry may be unavailable (e.g., local file store). Fall back to search.
+        pass
     # Fallback: pick the highest version across all stages
-    versions = client.search_model_versions(f"name='{model_name}'")
+    try:
+        versions = client.search_model_versions(f"name='{model_name}'")
+    except Exception:
+        return None
     if not versions:
         return None
     return max(versions, key=lambda v: int(v.version)).version
