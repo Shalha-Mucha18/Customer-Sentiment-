@@ -65,8 +65,23 @@ class TestModelPerformance(unittest.TestCase):
     @staticmethod
     def get_latest_model_version(model_name, stage="Staging"):
         client = mlflow.MlflowClient()
-        latest_version = client.get_latest_versions(model_name, stages=[stage])
-        return latest_version[0].version if latest_version else None    
+        try:
+            # Prefer stage-based lookup when available.
+            latest_version = client.get_latest_versions(model_name, stages=[stage])
+            if latest_version:
+                return latest_version[0].version
+        except Exception:
+            # Fall back to all versions when registry stage API is unavailable.
+            pass
+
+        try:
+            versions = client.search_model_versions(f"name='{model_name}'")
+        except Exception:
+            return None
+
+        if not versions:
+            return None
+        return max(versions, key=lambda v: int(v.version)).version
 
     def test_model_loaded_properly(self):
         self.assertIsNotNone(self.new_model)
