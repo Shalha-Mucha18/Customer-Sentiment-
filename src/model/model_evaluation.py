@@ -103,6 +103,7 @@ def evaluate_model(model, X_test, y_test):
 def save_metrics(metrics: dict, file_path: str) -> None:
     """Save the evaluation metrics to a JSON file."""
     try:
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, 'w') as file:
             json.dump(metrics, file)
         logging.info('Evaluation metrics saved to %s', file_path)
@@ -113,6 +114,7 @@ def save_metrics(metrics: dict, file_path: str) -> None:
 def save_model_info(run_id: str, model_uri: str, file_path: str):
     """Save the run ID and model URI to a JSON file."""
     try:
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         model_info = {'run_id': run_id, 'model_uri': model_uri}
         with open(file_path, 'w') as file:
             json.dump(model_info, file)
