@@ -171,6 +171,8 @@ tzdata
 urllib3
 vine
 voluptuous
+pytest
+pytest-cov
 waitress
 wcwidth
 Werkzeug
