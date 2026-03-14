@@ -27,6 +27,8 @@ spec:
             memory: "512Mi"
             cpu: "1"
         env:
+        - name: CI
+          value: "1"
         - name: CAPSTONE_TEST
           valueFrom:
             secretKeyRef:
