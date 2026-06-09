@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 Customer Sentiment Classification
+# 🧠 Customer Sentiment MLOps Pipeline
 
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
